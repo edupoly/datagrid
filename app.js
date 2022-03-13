@@ -10,6 +10,40 @@ app.use(cookieParser());
 app.get("/login",(req,res)=>{
     res.sendFile(__dirname+"/login.html")
 })
+
+//1. res.send()
+//2. res.sendFile()
+//3. res.json()
+//handling get request
+
+//1. req.params
+//2. configure body-parser middleware(urlencoded,json)====>req.body
+//handling post request as well as sending post request using fetch
+
+//handling delete request at server side sending delete request using fetch
+//handling PUT request at server side sending PUT request using fetch
+
+//crud operations
+
+//template engine pug
+//understood
+//configured
+//rendering templates
+//passing data to templates
+//access input data in templates
+//looping input data
+//style to templates
+
+//middlewares....
+//authentication authorisation using middlewares
+//multiple ways of usig middlewares
+//multiple middlewares at a time
+//route specific middlewares
+
+//cookies
+//configuration//usage of cookieparse
+//usage of cookies parse in authentication
+
 app.post("/authenticate",(req,res)=>{
     console.log("req.body::",req.body)
     if(req.body.username==='praveen' && req.body.password==='abc'){
@@ -21,7 +55,7 @@ app.post("/authenticate",(req,res)=>{
     }
 })
 
-app.use(function(req,res,next){
+var validate = function(req,res,next){
     console.log("MIddle middle function called");
     if(req.cookies.username)
     {
@@ -30,8 +64,20 @@ app.use(function(req,res,next){
     else{
         res.redirect("/login")
     }
-})
+}
+const requestTime = function (req, res, next) {
+    req.requestTime = Date.now();
+    console.log(req.requestTime)
+    next()
+  }
+// app.use(validate,requestTime);
 
+app.use(validate);
+app.use(requestTime);
+const checkAuthorization = function(req,res,next){
+    console.log("he is authorized")
+    next();
+}
 var tasks = ['manas shoe','milkshakes','carwash'];
 
 
@@ -46,11 +92,13 @@ app.post("/addTask",(req,res)=>{
     tasks.push(req.body.task)
     res.json({message:'SUCCESS'})
 })
-app.put("/updateTask",(req,res)=>{
+
+app.put("/updateTask", checkAuthorization, (req,res)=>{
     console.log("req.body",req.body)
     tasks[req.body.id]=req.body.task;
     res.json({message:'SUCCESS'})
 })
+
 app.delete("/deleteTask/:id",(req,res)=>{
     console.log(req.params)
     tasks.splice(req.params.id,1);
