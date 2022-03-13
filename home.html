@@ -1,0 +1,95 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+        <input type="text" id="task">
+        <button onclick="addTask()">Add Task</button>
+        <ul id="d1">
+
+        </ul>
+        <script>
+            function getTasks(){
+                fetch("http://localhost:3400/getTasks")
+                .then(res=>res.json())
+                .then(data=>{
+                    document.getElementById("d1").innerHTML = '';
+                    data.forEach((task,i) => {
+                        var newli = document.createElement('li');
+                        newli.innerHTML=task;
+                        var delBtn = document.createElement("button");
+                        delBtn.innerHTML = 'delete';
+                        delBtn.onclick = function(){
+                            deleteTask(i)
+                        }
+                        newli.appendChild(delBtn);
+                        var editBtn = document.createElement('button');
+                        editBtn.innerHTML = 'edit';
+                        editBtn.onclick=function(){
+                            editTask(i,task)
+                        }
+                        newli.appendChild(editBtn)
+                        document.getElementById("d1").appendChild(newli)
+                    });
+                });
+            }
+            function editTask(id,task){
+                var updatedTask = prompt("Enter updated data",task)
+               // var newtask = document.getElementById('task').value;
+                fetch("http://localhost:3400/updateTask",{
+                    method:'PUT',
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({task:updatedTask,id:id})
+                })
+                .then(res=>res.json())
+                .then(data=>{
+                    if(data.message==='SUCCESS'){
+                        alert("Task updated successfully")
+                        getTasks();
+                    }
+                })
+            }
+            getTasks();
+            function deleteTask(ind){
+                fetch("http://localhost:3400/deleteTask/"+ind,{
+                    method:'DELETE'                    
+                })
+                .then(res=>res.json())
+                .then(data=>{
+                    if(data.message==='SUCCESS'){
+                        alert("Task deleted successfully")
+                        getTasks();
+                    }
+                    if(data.message==='wait'){
+                        alert("Please wait")
+                    }
+                })
+            }
+            function addTask(){
+                var newtask = document.getElementById('task').value;
+                fetch("http://localhost:3400/addTask",{
+                    method:'POST',
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({task:newtask})
+                })
+                .then(res=>res.json())
+                .then(data=>{
+                    if(data.message==='SUCCESS'){
+                        alert("Task added successfully")
+                        getTasks();
+                    }
+                })
+            }
+        </script>
+    </body>
+</html>
+<!-- 
+    read -   GET
+    create - POST
+    update - PUT
+    delete - DELETE
+ -->
