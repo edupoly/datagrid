@@ -1,23 +1,40 @@
 var express = require('express');
 var app = express();
+var cookieParser = require('cookie-parser')
 
 var bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(cookieParser());
 
-var tasks = ['manas shoe','milkshakes','carwash'];
 app.get("/login",(req,res)=>{
     res.sendFile(__dirname+"/login.html")
 })
 app.post("/authenticate",(req,res)=>{
     console.log("req.body::",req.body)
     if(req.body.username==='praveen' && req.body.password==='abc'){
+        res.cookie('username',req.body.username)
         res.redirect("/")
     }
     else{
         res.sendFile(__dirname+"/errorlogin.html")
     }
 })
+
+app.use(function(req,res,next){
+    console.log("MIddle middle function called");
+    if(req.cookies.username)
+    {
+        next();
+    }
+    else{
+        res.redirect("/login")
+    }
+})
+
+var tasks = ['manas shoe','milkshakes','carwash'];
+
+
 app.get("/",function(req,res){
     res.sendFile(__dirname+"/home.html")
 })
